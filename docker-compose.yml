@@ -1,0 +1,21 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./backend
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./backend/.env:/app/.env
+      - ./backend/token.json:/app/token.json
+      - ./backend/credentials.json:/app/credentials.json
+      - ./backend/events.json:/app/events.json
+    environment:
+      - PYTHONUNBUFFERED=1
+
+  frontend:
+    build: ./frontend
+    ports:
+      - "5173:80"
+    depends_on:
+      - backend

@@ -1,0 +1,20 @@
+@import "tailwindcss";
+
+@theme {
+  --color-void-black: #050505;
+  --color-void-gray: #121212;
+  --color-divine-gold: #FFD700;
+  --color-terminal-green: #00FF41;
+  
+  --font-mono: "Fira Code", monospace;
+}
+
+:root {
+  background-color: var(--color-void-black);
+  color: #e5e5e5;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+}

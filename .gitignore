@@ -1,0 +1,22 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.env
+
+# Node.js
+node_modules/
+dist/
+.DS_Store
+
+# Google Calendar API (Sensitive)
+backend/credentials.json
+backend/token.json
+backend/events.json
+
+# Logs
+*.log
+
+# Docker
+.docker/
