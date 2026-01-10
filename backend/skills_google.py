@@ -181,11 +181,12 @@ def search_events(query: str, days_range: int = 30) -> str:
     except Exception as e:
         return f"System Error: {str(e)}"
 
-def schedule_event(title: str, date_str: str, time_str: str, attendees: Optional[List[str]] = None) -> str:
+def schedule_event(title: str, date_str: str, time_str: str, duration_minutes: int = 60, attendees: Optional[List[str]] = None) -> str:
     """
     Schedules an event.
     date_str: YYYY-MM-DD
     time_str: HH:MM
+    duration_minutes: Duration in minutes (default 60)
     attendees: List of email strings
     """
     try:
@@ -197,7 +198,7 @@ def schedule_event(title: str, date_str: str, time_str: str, attendees: Optional
         
         # Better approach: Use fully aware datetimes for start/end
         start_dt = datetime.datetime.strptime(f"{date_str} {time_str}", "%Y-%m-%d %H:%M").replace(tzinfo=local_tz)
-        end_dt = start_dt + datetime.timedelta(hours=1)
+        end_dt = start_dt + datetime.timedelta(minutes=duration_minutes)
         
         event = {
             "summary": title,
@@ -221,7 +222,7 @@ def schedule_event(title: str, date_str: str, time_str: str, attendees: Optional
     except Exception as e:
         return f"System Error: {str(e)}"
 
-def update_event(event_id: str, title: Optional[str] = None, date_str: Optional[str] = None, time_str: Optional[str] = None, attendees: Optional[List[str]] = None) -> str:
+def update_event(event_id: str, title: Optional[str] = None, date_str: Optional[str] = None, time_str: Optional[str] = None, duration_minutes: Optional[int] = None, attendees: Optional[List[str]] = None) -> str:
     """
     Updates an existing event's details.
     """
@@ -234,22 +235,27 @@ def update_event(event_id: str, title: Optional[str] = None, date_str: Optional[
         if title:
             event["summary"] = title
             
-        if date_str or time_str:
+        if date_str or time_str or duration_minutes:
             # We need to reconstruct the start/end if either changes
             # Get current start as anchor if one is missing
             current_start = event["start"].get("dateTime", event["start"].get("date"))
-            # Python 3.11+ handle ISO with offsets, but 'Z' needs to be handled for older or certain formats
-            dt = datetime.datetime.fromisoformat(current_start.replace('Z', '+00:00'))
+            dt_start = datetime.datetime.fromisoformat(current_start.replace('Z', '+00:00'))
             
-            new_date = date_str if date_str else dt.strftime("%Y-%m-%d")
-            new_time = time_str if time_str else dt.strftime("%H:%M")
+            # Use current end to calculate duration if duration_minutes is not provided
+            current_end = event["end"].get("dateTime", event["end"].get("date"))
+            dt_end = datetime.datetime.fromisoformat(current_end.replace('Z', '+00:00'))
+            current_duration = int((dt_end - dt_start).total_seconds() / 60)
+            
+            new_date = date_str if date_str else dt_start.strftime("%Y-%m-%d")
+            new_time = time_str if time_str else dt_start.strftime("%H:%M")
+            new_duration = duration_minutes if duration_minutes is not None else current_duration
             
             local_tz = datetime.datetime.now().astimezone().tzinfo
-            start_dt = datetime.datetime.strptime(f"{new_date} {new_time}", "%Y-%m-%d %H:%M").replace(tzinfo=local_tz)
-            end_dt = start_dt + datetime.timedelta(hours=1)
+            final_start_dt = datetime.datetime.strptime(f"{new_date} {new_time}", "%Y-%m-%d %H:%M").replace(tzinfo=local_tz)
+            final_end_dt = final_start_dt + datetime.timedelta(minutes=new_duration)
             
-            event["start"] = {"dateTime": start_dt.isoformat()}
-            event["end"] = {"dateTime": end_dt.isoformat()}
+            event["start"] = {"dateTime": final_start_dt.isoformat()}
+            event["end"] = {"dateTime": final_end_dt.isoformat()}
             
         if attendees:
             # Replace existing list
@@ -312,7 +318,7 @@ AVAILABLE_TOOLS = [
         "type": "function",
         "function": {
             "name": "schedule_event",
-            "description": "Schedule a new event on the Google Calendar. Defaults to 1 hour duration.",
+            "description": "Schedule a new event on the Google Calendar. Default duration is 60 minutes if not specified.",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -328,6 +334,10 @@ AVAILABLE_TOOLS = [
                         "type": "string",
                         "description": "The time of the event in HH:MM format (24-hour)."
                     },
+                    "duration_minutes": {
+                        "type": "integer",
+                        "description": "The duration of the event in minutes (default is 60)."
+                    },
                     "attendees": {
                         "type": "array",
                         "items": { "type": "string" },
@@ -342,7 +352,7 @@ AVAILABLE_TOOLS = [
         "type": "function",
         "function": {
             "name": "update_event",
-            "description": "Update an existing event. Use this to change the title, time, or add attendees/invitations.",
+            "description": "Update an existing event. Use this to change the title, time, duration, or add attendees/invitations.",
             "parameters": {
                 "type": "object",
                 "properties": {
@@ -361,6 +371,10 @@ AVAILABLE_TOOLS = [
                     "time_str": {
                         "type": "string",
                         "description": "New time in HH:MM format (optional)."
+                    },
+                    "duration_minutes": {
+                        "type": "integer",
+                        "description": "New duration in minutes (optional)."
                     },
                     "attendees": {
                         "type": "array",
@@ -443,6 +457,7 @@ def execute_tool_call(tool_name: str, arguments: Dict[str, Any]) -> str:
             arguments.get("title"), 
             arguments.get("date_str"), 
             arguments.get("time_str"),
+            arguments.get("duration_minutes", 60),
             arguments.get("attendees")
         )
     elif tool_name == "update_event":
@@ -451,6 +466,7 @@ def execute_tool_call(tool_name: str, arguments: Dict[str, Any]) -> str:
             arguments.get("title"),
             arguments.get("date_str"),
             arguments.get("time_str"),
+            arguments.get("duration_minutes"),
             arguments.get("attendees")
         )
     elif tool_name == "delete_event":

@@ -10,6 +10,7 @@ services:
       - ./backend/token.json:/app/token.json
       - ./backend/credentials.json:/app/credentials.json
       - ./backend/events.json:/app/events.json
+      - ./backend/mahakaal_chats.db:/app/mahakaal_chats.db
     environment:
       - PYTHONUNBUFFERED=1
 
