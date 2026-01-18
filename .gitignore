@@ -20,3 +20,13 @@ backend/events.json
 
 # Docker
 .docker/
+
+# Terraform
+.terraform/
+*.tfstate
+*.tfstate.backup
+.terraform.lock.hcl
+terraform.tfvars
+
+# Database
+backend/mahakaal_chats.db
