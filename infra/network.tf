@@ -58,6 +58,24 @@ resource "oci_core_security_list" "mahakaal_sl" {
       max = 443
     }
   }
+
+  ingress_security_rules {
+    protocol = "6" # TCP
+    source   = "0.0.0.0/0"
+    tcp_options {
+      min = 8000
+      max = 8000
+    }
+  }
+
+  ingress_security_rules {
+    protocol = "6" # TCP
+    source   = "0.0.0.0/0"
+    tcp_options {
+      min = 5173
+      max = 5173
+    }
+  }
 }
 
 resource "oci_core_subnet" "mahakaal_subnet" {

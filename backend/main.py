@@ -1,4 +1,7 @@
 from fastapi import FastAPI, HTTPException, Depends
+from dotenv import load_dotenv
+
+load_dotenv()
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List, Dict, Any, Optional
@@ -21,10 +24,10 @@ app.include_router(auth_router)
 def startup_event():
     init_db()
 
-# Allow CORS for frontend
+# Allow CORS for frontend and mobile
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=["http://147.224.205.129.nip.io:5173", "http://localhost:5173", "http://147.224.205.129:5173", "capacitor://localhost", "http://mahakaal.abhijithsetty.com", "https://mahakaal.abhijithsetty.com"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

@@ -13,6 +13,8 @@ SCOPES = ["https://www.googleapis.com/auth/calendar"]
 
 CREDENTIALS_FILE = "credentials.json"
 TOKEN_FILE = "token.json"
+CST = datetime.timezone(datetime.timedelta(hours=-6))
+
 
 def _get_calendar_service():
     """Shows basic usage of the Google Calendar API."""
@@ -44,8 +46,8 @@ def _get_calendar_service():
     return service
 
 def get_current_datetime() -> str:
-    """Returns the current date and time with day of the week in a human-readable format."""
-    return datetime.datetime.now().strftime("%A, %Y-%m-%d %H:%M:%S")
+    """Returns the current date and time with day of the week in a human-readable format (CST)."""
+    return datetime.datetime.now(CST).strftime("%A, %Y-%m-%d %H:%M:%S")
 
 def list_events(date_str: str) -> str:
     """
@@ -55,9 +57,9 @@ def list_events(date_str: str) -> str:
     try:
         service = _get_calendar_service()
         
-        # Parse date range for the entire day logic using local time
+        # Parse date range for the entire day logic using CST
         # Get local timezone
-        local_tz = datetime.datetime.now().astimezone().tzinfo
+        local_tz = CST
         
         # Create aware datetimes for start and end of day
         dt = datetime.datetime.strptime(date_str, "%Y-%m-%d")
@@ -100,7 +102,7 @@ def list_events_range(start_date: str, days: int = 7) -> str:
     """
     try:
         service = _get_calendar_service()
-        local_tz = datetime.datetime.now().astimezone().tzinfo
+        local_tz = CST
         
         dt_start = datetime.datetime.strptime(start_date, "%Y-%m-%d")
         time_min = dt_start.replace(hour=0, minute=0, second=0, tzinfo=local_tz).isoformat()
@@ -143,7 +145,7 @@ def search_events(query: str, days_range: int = 30) -> str:
     """
     try:
         service = _get_calendar_service()
-        local_tz = datetime.datetime.now().astimezone().tzinfo
+        local_tz = CST
         
         now = datetime.datetime.now(local_tz)
         time_min = now.isoformat()
@@ -194,7 +196,7 @@ def schedule_event(title: str, date_str: str, time_str: str, duration_minutes: i
         
         # Combine date and time
         # Get local timezone dynamically
-        local_tz = datetime.datetime.now().astimezone().tzinfo
+        local_tz = CST
         
         # Better approach: Use fully aware datetimes for start/end
         start_dt = datetime.datetime.strptime(f"{date_str} {time_str}", "%Y-%m-%d %H:%M").replace(tzinfo=local_tz)
@@ -250,7 +252,7 @@ def update_event(event_id: str, title: Optional[str] = None, date_str: Optional[
             new_time = time_str if time_str else dt_start.strftime("%H:%M")
             new_duration = duration_minutes if duration_minutes is not None else current_duration
             
-            local_tz = datetime.datetime.now().astimezone().tzinfo
+            local_tz = CST
             final_start_dt = datetime.datetime.strptime(f"{new_date} {new_time}", "%Y-%m-%d %H:%M").replace(tzinfo=local_tz)
             final_end_dt = final_start_dt + datetime.timedelta(minutes=new_duration)
             

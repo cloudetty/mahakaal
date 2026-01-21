@@ -12,6 +12,25 @@ The UI is designed to look like a futuristic command center.
 - **Colors:** Void Black (`#050505`), Divine Gold (`#FFD700`), Terminal Green (`#00FF41`).
 - **Vibe:** Minimalist, high-contrast, professional, and slightly mysterious.
 
+## ✅ Project Status (Jan 2026)
+
+### Completed
+- **Infrastructure:**
+    - [x] OCI Server Deployed (Free Tier: 4 OCPU, 24GB RAM).
+    - [x] Public URL Access via `nip.io` wildcard domain.
+    - [x] Docker & Docker Compose setup on production.
+- **Mobile Compatibility:**
+    - [x] Capacitor wrapper configured for iOS.
+    - [x] API URL standardization to support remote access.
+- **Security:**
+    - [x] OAuth Redirects fixed (Localhost -> Production Domain).
+    - [x] CORS Policies updated for mobile and web.
+
+### Remaining / In Progress
+- [ ] **Final Mobile Build:** Running `npx cap open ios` to deploy to physical device.
+- [ ] **Native OAuth:** Implementing Capacitor Google Auth plugin for better mobile login experience.
+- [ ] **Database Migration:** Moving from `events.json` to a persistent SQL database.
+
 ---
 
 ## 🏗️ Architecture & Structure

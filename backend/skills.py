@@ -19,8 +19,10 @@ def _save_events(events: List[Dict[str, Any]]):
         json.dump(events, f, indent=2)
 
 def get_current_datetime() -> str:
-    """Returns the current date and time in a human-readable format."""
-    return datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    """Returns the current date and time in a human-readable format (CST)."""
+    # Hardcoded to CST (UTC-6)
+    cst = datetime.timezone(datetime.timedelta(hours=-6))
+    return datetime.datetime.now(cst).strftime("%Y-%m-%d %H:%M:%S")
 
 def check_availability(date_str: str) -> str:
     """

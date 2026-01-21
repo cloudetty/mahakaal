@@ -11,7 +11,10 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 CREDENTIALS_FILE = "credentials.json"
 TOKEN_FILE = "token.json"
 SCOPES = ["https://www.googleapis.com/auth/calendar"]
-REDIRECT_URI = "http://localhost:8000/auth/callback"
+
+# Use environment variables for redirects, default to localhost for development
+REDIRECT_URI = os.getenv("REDIRECT_URI", "http://localhost:8000/auth/callback")
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
 
 @router.get("/login")
 def login():
@@ -57,7 +60,7 @@ def callback(code: str):
             token.write(credentials.to_json())
             
         # Redirect back to the frontend app
-        return RedirectResponse("http://localhost:5173")
+        return RedirectResponse(FRONTEND_URL)
         
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Authentication failed: {str(e)}")
